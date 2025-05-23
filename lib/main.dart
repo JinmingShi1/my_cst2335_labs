@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -54,10 +55,62 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  // image component for meat
+  Widget meatPic({
+    required String backgroundImage,
+    required String text,
+  }) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        CircleAvatar(
+          radius: 37,
+          backgroundImage: AssetImage(backgroundImage),
+        ),
+        Align(
+          alignment: Alignment.center,
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-  var imageSource = "images/question-mark.png";
+  // image component for course and dessert
+  Widget dessertAndCoursePic({
+    required String backgroundImage,
+    required String text,
+  }) {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        CircleAvatar(
+          radius: 37,
+          backgroundImage: AssetImage(backgroundImage),
+        ),
+        Positioned(
+          top: 80,
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  static const TextStyle titleStyle = TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
 
   @override
   Widget build(BuildContext context) {
@@ -68,69 +121,92 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
+      // appBar: AppBar(
+      //   // TRY THIS: Try changing the color here to a specific color (to
+      //   // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+      //   // change color while the other colors stay the same.
+      //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      //   // Here we take the value from the MyHomePage object that was created by
+      //   // the App.build method, and use it to set our appbar title.
+      //   title: Text(widget.title),
+      // ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Login name'),
-            ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Password'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                var passwd = _passwordController.text;
-
-                setState(() {
-                  if (passwd == "QWERTY123") {
-                    imageSource = "images/idea.png";
-                  } else {
-                    imageSource = "images/stop.png";
-                  }
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.blue,
-                minimumSize: Size(100, 50),
-
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 60),
+          child: Column(
+            // Column is also a layout widget. It takes a list of children and
+            // arranges them vertically. By default, it sizes itself to fit its
+            // children horizontally, and tries to be as tall as its parent.
+            //
+            // Column has various properties to control how it sizes itself and
+            // how it positions its children. Here we use mainAxisAlignment to
+            // center the children vertically; the main axis here is the vertical
+            // axis because Columns are vertical (the cross axis would be
+            // horizontal).
+            //
+            // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+            // action in the IDE, or press "p" in the console), to see the
+            // wireframe for each widget.
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                  "BROWSE CATEGORIES",
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)
               ),
-              child: Text('Login'),
-            ),
-            Image.asset(
-              imageSource,
-              width: 300,
-              height: 300,
-            ),
-          ],
-        ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                    "Not sure about exactly which recipe you're looking for? Do a search, or dive into our most popular categories.",
+                    style: TextStyle(fontSize: 14, color: Colors.black87)
+                )
+              ),
+              
+              Text(
+                "BY MEAT",
+                style: titleStyle,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  meatPic(backgroundImage: "images/Beef.jpg", text: "Beef"),
+                  meatPic(backgroundImage: "images/Chicken.jpg", text: "Chicken"),
+                  meatPic(backgroundImage: "images/Pork.jpg", text: "Pork"),
+                  meatPic(backgroundImage: "images/Seafood.jpg", text: "Seafood"),
+                ],
+              ),
+              Text(
+                "BY COURSE",
+                style: titleStyle,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  dessertAndCoursePic(backgroundImage: "images/MainDishes.jpg", text: "Main Dishes"),
+                  dessertAndCoursePic(backgroundImage: "images/Salad.jpg", text: "Salad Recipes"),
+                  dessertAndCoursePic(backgroundImage: "images/SideDishes.jpg", text: "Side Dishes"),
+                  dessertAndCoursePic(backgroundImage: "images/Crockpot.jpg", text: "Crockpot"),
+                ],
+              ),
+              Text(
+                "BY DESSERT",
+                style: titleStyle,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  dessertAndCoursePic(backgroundImage: "images/IceCream.jpg", text: "Ice Cream"),
+                  dessertAndCoursePic(backgroundImage: "images/Brownies.jpg", text: "Brownies"),
+                  dessertAndCoursePic(backgroundImage: "images/Pies.jpg", text: "Pies"),
+                  dessertAndCoursePic(backgroundImage: "images/Cookies.jpg", text: "Cookies"),
+                ],
+              ),
+            ],
+
+          ),
+        )
+
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
