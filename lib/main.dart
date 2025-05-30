@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -56,8 +57,40 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final EncryptedSharedPreferences prefs = EncryptedSharedPreferences();
 
   var imageSource = "images/question-mark.png";
+
+  @override
+  void initState() {
+    super.initState();
+    loadSavedCredentials();
+  }
+
+  void loadSavedCredentials() async {
+    try {
+      final username = await prefs.getString('username');
+      final password = await prefs.getString('password');
+
+      if (username != "" && password != "") {
+        setState(() {
+          _usernameController.text = username;
+          _passwordController.text = password;
+        });
+        Future.delayed(Duration.zero, () {
+          // show Snackbar
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Loaded username and password from shared preferences.')),
+            );
+          });
+        }  );
+
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,16 +139,35 @@ class _MyHomePageState extends State<MyHomePage> {
               decoration: InputDecoration(labelText: 'Password'),
             ),
             ElevatedButton(
-              onPressed: () {
-                var passwd = _passwordController.text;
+              onPressed: () async {
 
-                setState(() {
-                  if (passwd == "QWERTY123") {
-                    imageSource = "images/idea.png";
-                  } else {
-                    imageSource = "images/stop.png";
-                  }
-                });
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text('Save Login Info?'),
+                        content: Text('Do you want to save your username and password for next time?'),
+                        actions: [
+                          TextButton(
+                              onPressed: () async {
+                                await prefs.setString('username', _usernameController.text);
+                                await prefs.setString('password', _passwordController.text);
+                                Navigator.pop(context);
+                              },
+                              child: Text('Yes')
+                          ),
+                          TextButton(
+                              onPressed: () async {
+                                await prefs.clear();
+                                Navigator.pop(context);
+                              },
+                              child: Text('No')
+                          ),
+                        ],
+                      );
+                    }
+                );
+
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.blue,
