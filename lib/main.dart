@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
+import 'ProfilePage.dart';
+
 void main() {
   runApp(const MyApp());
+}
+
+class DataRepository{
+  static String loginName = '';
 }
 
 class MyApp extends StatelessWidget {
@@ -140,6 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             ElevatedButton(
               onPressed: () async {
+                DataRepository.loginName = _usernameController.text;
 
                 showDialog(
                     context: context,
@@ -153,6 +160,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                 await prefs.setString('username', _usernameController.text);
                                 await prefs.setString('password', _passwordController.text);
                                 Navigator.pop(context);
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => ProfilePage())
+                                );
                               },
                               child: Text('Yes')
                           ),
