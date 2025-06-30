@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:my_cst2335_labs/ListPage.dart';
+import 'package:my_cst2335_labs/list_page.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 

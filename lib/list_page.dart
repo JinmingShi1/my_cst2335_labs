@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:my_cst2335_labs/dao/todo_dao.dart';
+import 'package:my_cst2335_labs/database/database.dart';
+import 'package:my_cst2335_labs/models/itemEntity.dart';
 
 class ListPage extends StatefulWidget {
+  const ListPage({super.key});
+
   @override
   _ListPageState createState() => _ListPageState();
 }
@@ -8,7 +13,25 @@ class ListPage extends StatefulWidget {
 class _ListPageState extends State<ListPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
-  List<String> items = [];
+  List<Item> items = [];
+  late ToDoDao toDoDao;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeDatabase();
+  }
+
+  Future<void> _initializeDatabase() async {
+    final database = await $FloorTodoDatabase.databaseBuilder('todo_app_database.db').build();
+    toDoDao = database.todoDao;
+    toDoDao.findAllToDoItems().then((list) {
+      print("tmpItems: ${list}");
+      setState(() {
+        items = list;
+      });
+    });
+  }
 
   void showDeleteDialog(int rowNum) {
     showDialog(
@@ -25,11 +48,13 @@ class _ListPageState extends State<ListPage> {
               child: Text('No'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
+                Item currentItem = items[rowNum];
                 setState(() {
                   items.removeAt(rowNum);
                 });
                 Navigator.of(context).pop(); // Close dialog
+                await toDoDao.deleteToDoItem(currentItem);
               },
               child: Text('Yes'),
             ),
@@ -72,7 +97,7 @@ class _ListPageState extends State<ListPage> {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_nameController.text.isEmpty || _quantityController.text.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -82,8 +107,13 @@ class _ListPageState extends State<ListPage> {
                         );
                         return;
                       }
+                      // add new item
+                      Item newItem = Item(itemName: _nameController.text, quantity: _quantityController.text);
+                      final insertedId = await toDoDao.insertToDoItem(newItem);
+                      newItem.id = insertedId;
+
                       setState(() {
-                        items.add("${_nameController.text}: ${_quantityController.text}");
+                        items.add(newItem);
                         _nameController.clear();
                         _quantityController.clear();
                       });
@@ -103,7 +133,7 @@ class _ListPageState extends State<ListPage> {
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text("${rowNum + 1}: ${items[rowNum]}", textAlign: TextAlign.center),
+                        child: Text("${items[rowNum].id}: ${items[rowNum].itemName}:${items[rowNum].quantity}", textAlign: TextAlign.center),
                       ),
                     );
                   },
