@@ -133,7 +133,7 @@ class _ListPageState extends State<ListPage> {
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text("${items[rowNum].id}: ${items[rowNum].itemName}:${items[rowNum].quantity}", textAlign: TextAlign.center),
+                        child: Text("${items[rowNum].id} : ${items[rowNum].itemName}:${items[rowNum].quantity}", textAlign: TextAlign.center),
                       ),
                     );
                   },
