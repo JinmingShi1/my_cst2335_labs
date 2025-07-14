@@ -3,6 +3,8 @@ import 'package:my_cst2335_labs/dao/todo_dao.dart';
 import 'package:my_cst2335_labs/database/database.dart';
 import 'package:my_cst2335_labs/models/itemEntity.dart';
 
+import 'DetailPage.dart';
+
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
 
@@ -14,6 +16,7 @@ class _ListPageState extends State<ListPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
   List<Item> items = [];
+  Item? selectedItem;
   late ToDoDao toDoDao;
 
   @override
@@ -33,39 +36,89 @@ class _ListPageState extends State<ListPage> {
     });
   }
 
-  void showDeleteDialog(int rowNum) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Confirm to delete'),
-          content: Text('Are you sure to delete "${items[rowNum]}"?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-              },
-              child: Text('No'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Item currentItem = items[rowNum];
-                setState(() {
-                  items.removeAt(rowNum);
-                });
-                Navigator.of(context).pop(); // Close dialog
-                await toDoDao.deleteToDoItem(currentItem);
-              },
-              child: Text('Yes'),
-            ),
-          ],
+  Future<void> _deleteItem(Item item) async {
+    await toDoDao.deleteToDoItem(item);
+    setState(() {
+      items.remove(item);
+      if (selectedItem == item) selectedItem = null;
+    });
+  }
+
+  Widget _buildList(bool isLargeScreen) {
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 20.0),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return ListTile(
+          title: Text('${item.id} : ${item.itemName} : ${item.quantity}'),
+          onTap: () {
+            if (isLargeScreen) {
+              setState(() {
+                selectedItem = item;
+              });
+            } else {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => DetailPage(
+                    item: item,
+                    onDelete: () {
+                      _deleteItem(item);
+                      Navigator.of(context).pop();
+                    },
+                    onClose: () => Navigator.of(context).pop(),
+                  ),
+                ),
+              );
+            }
+          },
         );
       },
     );
   }
 
+  Widget _buildDetail(Item item) {
+    return Card(
+      margin: const EdgeInsets.all(16),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('ID: ${item.id}', style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 8),
+            Text('Name: ${item.itemName}', style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 8),
+            Text('Quantity: ${item.quantity}', style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () => _deleteItem(item),
+                  child: const Text('Delete'),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      selectedItem = null;
+                    });
+                  },
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isLargeScreen = size.width > size.height && size.width > 720;
+
     return Scaffold(
       appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -123,21 +176,17 @@ class _ListPageState extends State<ListPage> {
                 ],
               ),
               Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.only(top: 20.0),
-                  itemCount: items.length,
-                  itemBuilder: (context, rowNum) {
-                    return GestureDetector(
-                      onLongPress: () {
-                        showDeleteDialog(rowNum);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text("${items[rowNum].id} : ${items[rowNum].itemName}:${items[rowNum].quantity}", textAlign: TextAlign.center),
-                      ),
-                    );
-                  },
-                ),
+                child: isLargeScreen
+                    ? Row(
+                        children: [
+                          Expanded(child: _buildList(isLargeScreen)),
+                          Expanded(
+                            child: selectedItem != null
+                                ? _buildDetail(selectedItem!)
+                                : const Center(child: Text('Select an item')),
+                          ),
+                        ],
+                      ) : _buildList(isLargeScreen),
               ),
             ],
           ),
